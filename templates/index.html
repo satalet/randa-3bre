@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לימוד עברית - רנדה זרבא 🌸</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gveret+Levin&family=Varela+Round&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #1e40af;
+      --accent: #0ea5e9;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background-color: var(--bg);
+      font-family: 'Tajawal', sans-serif;
+      margin: 0;
+      padding: 15px;
+      color: var(--text);
+    }
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 22px 15px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      margin-bottom: 25px;
+      border: 1px solid #e2e8f0;
+    }
+    .student-badge {
+      display: inline-block;
+      background: #eff6ff;
+      color: var(--secondary);
+      padding: 6px 22px;
+      border-radius: 30px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      border: 1px solid #bfdbfe;
+    }
+    .school-name {
+      color: #64748b;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .main-title {
+      color: var(--primary);
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    .camera-section {
+      background: white;
+      border: 2px dashed #93c5fd;
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.05);
+    }
+    .btn-camera {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 35px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: 'Tajawal', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-camera:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .loading-box {
+      display: none;
+      margin-top: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #bfdbfe;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+      border: 1px solid #e2e8f0;
+    }
+    .header-card {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 2px solid #93c5fd;
+      text-align: center;
+    }
+    .label {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .print-box {
+      font-family: 'Varela Round', sans-serif;
+      font-size: 1.45rem;
+      color: #0f172a;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+    .handwriting-box {
+      font-family: 'Gveret Levin', cursive;
+      font-size: 2.4rem;
+      color: #1e3a8a;
+      background: #f1f5f9;
+      padding: 10px 18px;
+      border-radius: 12px;
+      border-right: 5px solid var(--primary);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .translation {
+      font-size: 1.1rem;
+      color: #15803d;
+      font-weight: 700;
+    }
+    .sound-btn {
+      background: #eff6ff;
+      color: var(--secondary);
+      border: 1px solid #bfdbfe;
+      padding: 8px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-family: 'Tajawal', sans-serif;
+    }
+    .sound-btn:hover {
+      background: #dbeafe;
+      transform: scale(1.02);
+    }
+    .sound-btn.playing {
+      background: #22c55e;
+      color: white;
+      border-color: #16a34a;
+    }
+    .placeholder-msg {
+      text-align: center;
+      padding: 40px 20px;
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="student-badge">🌸 رندة زربا 🌸</div>
+    <div class="school-name">مدرسة الدوحة - كفر عقب</div>
+    <h1 class="main-title">לימוד עברית - العبري مع رنودي</h1>
+  </header>
+
+  <div class="camera-section">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleImageUpload(event)">
+    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">
+      📷 صوّري أو ارفعي صفحة من الكتاب
+    </button>
+    <div id="loading" class="loading-box">
+      <span class="spinner"></span>
+      جاري قراءة الصفحة وتحليل الكلمات والخط اليدوي...
+    </div>
+  </div>
+
+  <div id="lessonArea">
+    <div class="placeholder-msg card">
+      ✨ أهلاً برنودي البطلة! اضغطي على زر الكاميرا فوق وصوّري أي صفحة من كتاب العبري عشان تطلعلك فوراً بالخط اليدوي المدرسي والترجمة والصوت.
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentAudio = null;
+  let activeBtn = null;
+
+  async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const loading = document.getElementById('loading');
+    const lessonArea = document.getElementById('lessonArea');
+
+    loading.style.display = 'block';
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/process-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'حدث خطأ أثناء معالجة الصفحة');
+        loading.style.display = 'none';
+        return;
+      }
+
+      renderLesson(data);
+    } catch (err) {
+      console.error(err);
+      alert('تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت.');
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  function renderLesson(data) {
+    const lessonArea = document.getElementById('lessonArea');
+    let html = '';
+
+    if (data.lesson_title_hebrew) {
+      html += `
+        <div class="card header-card">
+          <div class="label">כותרת (عنوان الدرس):</div>
+          <div class="print-box" style="font-size: 2rem; font-weight: bold; margin: 4px 0;">${data.lesson_title_hebrew}</div>
+          <div class="handwriting-box" style="display: inline-block; padding: 6px 30px; background: white;">${data.lesson_title_hebrew}</div>
+          <div class="translation" style="font-size: 1.25rem; margin: 8px 0;">${data.lesson_title_arabic || ''}</div>
+          <div style="margin-top: 8px;">
+            <button class="sound-btn" onclick="playAudio('${encodeURIComponent(data.lesson_title_hebrew)}', this)">🔊 اسمعي العنوان</button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (data.items && data.items.length > 0) {
+      data.items.forEach((item, index) => {
+        html += `
+          <div class="card">
+            <div class="label">${index + 1}. خط الطباعة (כְּתָב דְּפוּס):</div>
+            <div class="print-box">${item.hebrew_print}</div>
+            <div class="label">رسمة خط اليد المدرسي (כְּתָב יָד):</div>
+            <div class="handwriting-box">${item.hebrew_clean || item.hebrew_print}</div>
+            <div class="bottom-row">
+              <div class="translation">📖 المعنى: ${item.arabic}</div>
+              <button class="sound-btn" onclick="playAudio('${encodeURIComponent(item.hebrew_clean || item.hebrew_print)}', this)">🔊 اسمعي اللفظ</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    lessonArea.innerHTML = html;
+  }
+
+  function playAudio(encodedText, btn) {
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    if (activeBtn) {
+      activeBtn.classList.remove('playing');
+      activeBtn.innerHTML = "🔊 اسمعي اللفظ";
+    }
+
+    btn.innerHTML = "🔊 جاري النطق...";
+    btn.classList.add('playing');
+    activeBtn = btn;
+
+    currentAudio = new Audio('/api/tts?text=' + encodedText);
+    currentAudio.play().catch(e => {
+      console.error(e);
+      btn.innerHTML = "🔊 اسمعي اللفظ";
+      btn.classList.remove('playing');
+    });
+
+    currentAudio.onended = () => {
+      btn.innerHTML = "🔊 اسمعي اللفظ";
+      btn.classList.remove('playing');
+      currentAudio = null;
+    };
+  }
+</script>
+
+</body>
+</html>
