@@ -63,33 +63,45 @@
       background: white;
       border: 2px dashed #93c5fd;
       border-radius: 20px;
-      padding: 30px 20px;
+      padding: 28px 18px;
       text-align: center;
       margin-bottom: 25px;
       box-shadow: 0 4px 15px rgba(37, 99, 235, 0.05);
     }
-    .btn-camera {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-action {
       color: white;
       border: none;
-      padding: 14px 28px;
+      padding: 13px 24px;
       border-radius: 35px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 800;
       cursor: pointer;
       font-family: 'Tajawal', sans-serif;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+      gap: 8px;
       transition: all 0.2s ease;
     }
-    .btn-camera:hover {
+    .btn-camera {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+    .btn-gallery {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+    }
+    .btn-action:hover {
       transform: translateY(-2px);
     }
     .loading-box {
       display: none;
-      margin-top: 15px;
+      margin-top: 18px;
       font-weight: 700;
       color: var(--primary);
       font-size: 1.1rem;
@@ -201,10 +213,20 @@
   </header>
 
   <div class="camera-section">
+    <!-- مدخل الكاميرا المباشرة -->
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleImageUpload(event)">
-    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">
-      📷 صوّري أو ارفعي صفحة من الكتاب
-    </button>
+    <!-- مدخل اختيار صورة من الاستوديو أو الملفات -->
+    <input type="file" id="galleryInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+
+    <div class="btn-group">
+      <button class="btn-action btn-camera" onclick="document.getElementById('cameraInput').click()">
+        📷 صوّري بالكاميرا فوراً
+      </button>
+      <button class="btn-action btn-gallery" onclick="document.getElementById('galleryInput').click()">
+        🖼️ اختاري من الصور / المعرض
+      </button>
+    </div>
+
     <div id="loading" class="loading-box">
       <span class="spinner"></span>
       جاري قراءة الصفحة وتحليل الكلمات والخط اليدوي بسرعة...
@@ -213,7 +235,7 @@
 
   <div id="lessonArea">
     <div class="placeholder-msg card">
-      ✨ أهلاً برنودي البطلة! اضغطي على زر الكاميرا فوق وصوّري أي صفحة من كتاب العبري عشان تطلعلك فوراً بالخط اليدوي المدرسي والترجمة والصوت.
+      ✨ أهلاً برنودي البطلة! اختاري تصوير صفحة بالكاميرا أو رفعها من صور الجوال عشان تطلعلك فوراً بالخط اليدوي المدرسي والترجمة والصوت.
     </div>
   </div>
 </div>
@@ -286,6 +308,7 @@
       alert('خطأ في الاتصال: ' + err.message);
     } finally {
       loading.style.display = 'none';
+      event.target.value = ''; // تصفير القيمة لإتاحة اختيار نفس الصورة مرة أخرى
     }
   }
 
@@ -329,7 +352,6 @@
     lessonArea.innerHTML = html;
   }
 
-  // دالة النطق الذكية المزدوجة (تعتمد ع محرك الهاتف أولاً ثم السيرفر كبديل)
   function speakHebrew(encodedText, btn) {
     const rawText = decodeURIComponent(encodedText);
 
@@ -350,11 +372,10 @@
     btn.classList.add('playing');
     activeBtn = btn;
 
-    // 1. المحاولة الأولى: عبر محرك النطق في هاتف رندة (أسرع وأنقى)
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(rawText);
       utterance.lang = 'he-IL';
-      utterance.rate = 0.8; // نطق بطيء وواضح للأطفال
+      utterance.rate = 0.8;
 
       utterance.onend = () => {
         btn.innerHTML = "🔊 اسمعي اللفظ";
@@ -370,7 +391,6 @@
       return;
     }
 
-    // 2. المحاولة البديلة: عبر سيرفر الصوت
     fallbackServerAudio(encodedText, btn);
   }
 
