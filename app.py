@@ -2,6 +2,7 @@ import io
 import json
 import os
 import re
+import time
 from flask import Flask, render_template, request, jsonify, send_file
 from PIL import Image
 from gtts import gTTS
@@ -10,7 +11,6 @@ from google.genai import types
 
 app = Flask(__name__)
 
-# تهيئة عميل Gemini API بأمان
 def get_gemini_client():
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -58,13 +58,31 @@ def process_image():
         قسّم المحتوى إلى جمل وبنود قصيرة وسهلة القراءة ومطابقة للصفحة تماماً.
         """
 
-        response = client.models.generate_content(
-            model='gemini-3.8-flash',
-            contents=[image, prompt],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json"
-            )
-        )
+        # قائمة موديلات ذكية واحتياطية لتفادي أي ضغط بسيرفرات جوجل
+        models_to_try = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        last_error = None
+        response = None
+
+        for model_name in models_to_try:
+            for attempt in range(2):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=[image, prompt],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json"
+                        )
+                    )
+                    if response and response.text:
+                        break
+                except Exception as err:
+                    last_error = err
+                    time.sleep(1.5)
+            if response and response.text:
+                break
+
+        if not response or not response.text:
+            raise last_error or Exception("تعذر معالجة الصورة حالياً، يرجى المحاولة بعد لحظات.")
 
         raw_text = response.text.strip()
         clean_json = re.sub(r'^```json\s*|\s*```$', '', raw_text)
@@ -81,7 +99,6 @@ def tts_stream():
     if not text:
         return jsonify({'error': 'لا يوجد نص للنطق'}), 400
 
-    # تنظيف التشكيل لضمان لفظ ناعم وسليم
     clean_text = re.sub(r'[\u0591-\u05C7]', '', text)
 
     try:
