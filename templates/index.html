@@ -16,9 +16,7 @@
       --card-bg: #ffffff;
       --text: #0f172a;
     }
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       background-color: var(--bg);
       font-family: 'Tajawal', sans-serif;
@@ -88,7 +86,6 @@
     }
     .btn-camera:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
     }
     .loading-box {
       display: none;
@@ -210,7 +207,7 @@
     </button>
     <div id="loading" class="loading-box">
       <span class="spinner"></span>
-      جاري قراءة الصفحة وتحليل الكلمات والخط اليدوي...
+      جاري قراءة الصفحة وتحليل الكلمات والخط اليدوي بسرعة...
     </div>
   </div>
 
@@ -225,19 +222,52 @@
   let currentAudio = null;
   let activeBtn = null;
 
+  // دالة ذكية لتصغير حجم صورة الكاميرا قبل إرسالها لتصل بأقل من ثانية
+  async function compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1400;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const loading = document.getElementById('loading');
-    const lessonArea = document.getElementById('lessonArea');
-
     loading.style.display = 'block';
 
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
+      const compressedBlob = await compressImage(file);
+      const formData = new FormData();
+      formData.append('image', compressedBlob, 'page.jpg');
+
       const response = await fetch('/api/process-image', {
         method: 'POST',
         body: formData
@@ -254,7 +284,7 @@
       renderLesson(data);
     } catch (err) {
       console.error(err);
-      alert('تعذر الاتصال بالسيرفر، تأكد من اتصال الإنترنت.');
+      alert('خطأ في الاتصال: ' + err.message);
     } finally {
       loading.style.display = 'none';
     }

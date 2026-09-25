@@ -2,7 +2,6 @@ import io
 import json
 import os
 import re
-import time
 from flask import Flask, render_template, request, jsonify, send_file
 from PIL import Image
 from gtts import gTTS
@@ -38,6 +37,8 @@ def process_image():
 
     try:
         image = Image.open(file.stream)
+        # تصغير أبعاد الصورة إذا كانت ضخمة لسرعة الاستجابة
+        image.thumbnail((1600, 1600))
 
         prompt = """
         أنت معلم لغة عبرية خبير للمرحلة الابتدائية في مدرسة رندة زربا.
@@ -58,31 +59,28 @@ def process_image():
         قسّم المحتوى إلى جمل وبنود قصيرة وسهلة القراءة ومطابقة للصفحة تماماً.
         """
 
-        # قائمة موديلات ذكية واحتياطية لتفادي أي ضغط بسيرفرات جوجل
-        models_to_try = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']
-        last_error = None
+        # الموديلات الرسمية فائقة السرعة والخفة
+        models_to_try = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash']
         response = None
+        last_error = None
 
         for model_name in models_to_try:
-            for attempt in range(2):
-                try:
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents=[image, prompt],
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json"
-                        )
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[image, prompt],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
                     )
-                    if response and response.text:
-                        break
-                except Exception as err:
-                    last_error = err
-                    time.sleep(1.5)
-            if response and response.text:
-                break
+                )
+                if response and response.text:
+                    break
+            except Exception as e:
+                last_error = e
+                continue
 
         if not response or not response.text:
-            raise last_error or Exception("تعذر معالجة الصورة حالياً، يرجى المحاولة بعد لحظات.")
+            raise last_error or Exception("تعذر تحليل الصورة، يرجى المحاولة مرة أخرى.")
 
         raw_text = response.text.strip()
         clean_json = re.sub(r'^```json\s*|\s*```$', '', raw_text)
@@ -91,7 +89,7 @@ def process_image():
         return jsonify(data)
 
     except Exception as e:
-        return jsonify({'error': f'تعذرت معالجة الصفحة: {str(e)}'}), 500
+        return jsonify({'error': f'خطأ أثناء المعالجة: {str(e)}'}), 500
 
 @app.route('/api/tts')
 def tts_stream():
