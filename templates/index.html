@@ -222,7 +222,6 @@
   let currentAudio = null;
   let activeBtn = null;
 
-  // دالة ذكية لتصغير حجم صورة الكاميرا قبل إرسالها لتصل بأقل من ثانية
   async function compressImage(file) {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -295,6 +294,7 @@
     let html = '';
 
     if (data.lesson_title_hebrew) {
+      const cleanTitle = (data.lesson_title_hebrew || '').replace(/[\u0591-\u05C7]/g, '');
       html += `
         <div class="card header-card">
           <div class="label">כותרת (عنوان الدرس):</div>
@@ -302,7 +302,7 @@
           <div class="handwriting-box" style="display: inline-block; padding: 6px 30px; background: white;">${data.lesson_title_hebrew}</div>
           <div class="translation" style="font-size: 1.25rem; margin: 8px 0;">${data.lesson_title_arabic || ''}</div>
           <div style="margin-top: 8px;">
-            <button class="sound-btn" onclick="playAudio('${encodeURIComponent(data.lesson_title_hebrew)}', this)">🔊 اسمعي العنوان</button>
+            <button class="sound-btn" onclick="speakHebrew('${encodeURIComponent(cleanTitle)}', this)">🔊 اسمعي العنوان</button>
           </div>
         </div>
       `;
@@ -310,15 +310,16 @@
 
     if (data.items && data.items.length > 0) {
       data.items.forEach((item, index) => {
+        const textToSpeak = (item.hebrew_clean || item.hebrew_print || '').replace(/[\u0591-\u05C7]/g, '');
         html += `
           <div class="card">
-            <div class="label">${index + 1}. خط الطباعة (כְּתָב דְּפוּס):</div>
+            <div class="label">${index + 1}. خط الطباعة (כְּתָב דְּפוּس):</div>
             <div class="print-box">${item.hebrew_print}</div>
             <div class="label">رسمة خط اليد المدرسي (כְּתָב יָד):</div>
             <div class="handwriting-box">${item.hebrew_clean || item.hebrew_print}</div>
             <div class="bottom-row">
               <div class="translation">📖 المعنى: ${item.arabic}</div>
-              <button class="sound-btn" onclick="playAudio('${encodeURIComponent(item.hebrew_clean || item.hebrew_print)}', this)">🔊 اسمعي اللفظ</button>
+              <button class="sound-btn" onclick="speakHebrew('${encodeURIComponent(textToSpeak)}', this)">🔊 اسمعي اللفظ</button>
             </div>
           </div>
         `;
@@ -328,10 +329,18 @@
     lessonArea.innerHTML = html;
   }
 
-  function playAudio(encodedText, btn) {
+  // دالة النطق الذكية المزدوجة (تعتمد ع محرك الهاتف أولاً ثم السيرفر كبديل)
+  function speakHebrew(encodedText, btn) {
+    const rawText = decodeURIComponent(encodedText);
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     if (currentAudio) {
       currentAudio.pause();
+      currentAudio = null;
     }
+
     if (activeBtn) {
       activeBtn.classList.remove('playing');
       activeBtn.innerHTML = "🔊 اسمعي اللفظ";
@@ -341,6 +350,31 @@
     btn.classList.add('playing');
     activeBtn = btn;
 
+    // 1. المحاولة الأولى: عبر محرك النطق في هاتف رندة (أسرع وأنقى)
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(rawText);
+      utterance.lang = 'he-IL';
+      utterance.rate = 0.8; // نطق بطيء وواضح للأطفال
+
+      utterance.onend = () => {
+        btn.innerHTML = "🔊 اسمعي اللفظ";
+        btn.classList.remove('playing');
+      };
+
+      utterance.onerror = (e) => {
+        console.warn("SpeechSynthesis error, falling back to server audio:", e);
+        fallbackServerAudio(encodedText, btn);
+      };
+
+      window.speechSynthesis.speak(utterance);
+      return;
+    }
+
+    // 2. المحاولة البديلة: عبر سيرفر الصوت
+    fallbackServerAudio(encodedText, btn);
+  }
+
+  function fallbackServerAudio(encodedText, btn) {
     currentAudio = new Audio('/api/tts?text=' + encodedText);
     currentAudio.play().catch(e => {
       console.error(e);
